@@ -1,0 +1,250 @@
+---
+title: "Atividade Monitorada IV"
+author: Gabriel Canfield & Patrick Zajdenwerg
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Dados
+```{r}
+library(readxl)
+dados <- read_excel("C:/Users/PatrickCamargo/Downloads/Atividade Monitorada IV - 2SEM2020.xlsx")
+View(dados)
+```
+
+### Packages 
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+
+## Questão A
+
+```{r}
+# seleção de dados para 19/05
+dados_19_05 <- filter(dados, dia == "19 de maio de 2020") 
+x_pop_19_05 <- select(dados_19_05, pop)
+y_pac_19_05 <- select(dados_19_05, total_uti)
+
+# seleção de dados para 14/07
+dados_14_07 <- filter(dados, dia == "14 de julho de 2020") 
+x_pop_14_07 <- select(dados_14_07, pop)
+y_pac_14_07 <- select(dados_14_07, total_uti)
+```
+
+```{r}
+# diagrama de disperção 19/05
+ggplot(dados_19_05) +
+  geom_point(aes(x = pop, y = total_uti), color = "red") +
+  xlab("População na DRS (por 100.000 habitantes)") +
+  ylab("Pacientes suspeitos e confirmados em UTI na DRS") +
+  ggtitle("Diagrama de dispersão para o dia 19 de maio de 2020")
+```
+
+```{r}
+# diagrama de disperção 14/07
+ggplot(dados_14_07) +
+  geom_point(aes(x = pop, y = total_uti), color = "red") +
+  xlab("População na DRS (por 100.000 habitantes)") +
+  ylab("Pacientes suspeitos e confirmados em UTI na DRS") +
+  ggtitle("Diagrama de dispersão para o dia 14 de julho de 2020")
+```
+
+#### Pelos diagramas obtidos, é visualmente intuitiva a existência de um grau significativo de correlação entre as duas variáveis, em ambas as datas. 
+
+
+## Questão B
+
+```{r}
+# 19/05
+attach(dados_19_05)
+cor(total_uti, pop)
+modelo_19_05 <- lm(total_uti ~ pop)
+summary(modelo_19_05)
+
+# 14/07
+attach(dados_14_07)
+cor(total_uti, pop)
+modelo_14_07 <- lm(total_uti ~ pop)
+summary(modelo_14_07)
+```
+
+#### 19/05/2020 
+##### Correlação: 0.8992129
+##### R-quadrado: 0.8086
+##### R-quadrado ajustado: 0.7985
+
+#### 14/07/2020
+##### Correlação: 0.8893881
+##### R-quadrado: 0.791
+##### R-quadrado ajustado: 0.78
+
+#### Os valores obtidos fundamentam a existência de correlação previstas pelas observações na questão A e, além disso, sugerem que a população é uma variável preditora para o número de pacientes suspeitos e confirmados em UTI na DRS. 
+
+
+## Questão C
+
+#### Equação de regressão para 19/05
+##### Y = -43.77 + 13.35 * X
+
+#### Teste de significância
+##### H0: Beta-1 = 0
+##### Ha: Beta-1 != 0
+#### Como observado na análise da regressão, o F observado (80.26) é maior que o F crítico (2.99), rejeita-se H0. Portanto, ao nível de significância de 10%, os coeficintes são válidos.
+
+
+```{r}
+attach(dados_19_05)
+ggplot(mapping = aes(pop, total_uti )) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  geom_hline(yintercept = mean(total_uti)) +
+  geom_segment(aes(x = pop  , y = total_uti, xend = pop , yend = mean(total_uti)), color="red") +
+  xlab("População na DRS (por 100.000 habitantes)") +
+  ylab("Pacientes suspeitos e confirmados em UTI na DRS") +
+  ggtitle("Diagrama de dispersão com a reta ajustada para 19 de maio de 2020")
+```
+
+#### Equação de regressão para 14/07
+##### Y = -59.592 + 20.306 * X
+
+#### Teste de significância
+##### H0: Beta-1 = 0
+##### Ha: Beta-1 != 0
+#### Como observado na análise da regressão, o F observado (71.91) é maior que o F crítico (2.99), rejeita-se H0. Portanto, ao nível de significância de 10%, os coeficintes são válidos.
+
+```{r}
+attach(dados_14_07)
+ggplot(mapping = aes(pop, total_uti)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  geom_hline(yintercept = mean(total_uti)) +
+  geom_segment(aes(x = pop  , y = total_uti, xend = pop , yend = mean(total_uti)), color="red") +
+  xlab("População na DRS (por 100.000 habitantes)") +
+  ylab("Pacientes suspeitos e confirmados em UTI na DRS") +
+  ggtitle("Diagrama de dispersão com a reta ajustada para 14 de julho de 2020")
+```
+
+```{r}
+# Valores previstos pelo modelo em 19 de maio de 2020
+previstos_19_05 <- predict(modelo_19_05, interval = "confidence", level = 0.90)
+previstos_19_05
+mean(previstos_19_05)
+```
+
+```{r}
+# Valores previstos pelo modelo em 14 de julho de 2020
+previstos_14_07 <- predict(modelo_14_07, interval = "confidence", level = 0.90)
+previstos_14_07
+mean(previstos_14_07)
+```
+
+#### O pior cenário é em 14/07, uma vez que os valores previstos de ocupação de UTI são maiores.
+
+
+## Questão D
+
+```{r}
+# definição do data frame para 1 milhão de habitantes
+new_1mm = data.frame(pop = 10)
+```
+
+```{r}
+# 19/05
+predict(modelo_19_05, new_1mm, interval = "confidence", level = 0.90)
+
+# 14/07
+predict(modelo_14_07, new_1mm, interval = "confidence", level = 0.90)
+```
+
+
+## Questão E
+
+```{r}
+# definição do data frame para 500 mil habitantes
+new_500k = data.frame(pop = 5)
+```
+
+```{r}
+# 19/05
+predict(modelo_19_05, new_500k, interval = "confidence", level = 0.90)
+
+# 14/07
+predict(modelo_14_07, new_500k, interval = "confidence", level = 0.90)
+```
+
+
+## Questão F
+
+### Análise 19 de maio de 2020
+
+```{r}
+# teste de sigmificância 
+anova(modelo_19_05)
+```
+
+#### O p-value é quase nulo e tem um valor menor que 0.10, ou seja, a relação entre as duas variáveis é significativa.
+
+```{r}
+# linearidade
+cor(dados_19_05$total_uti, dados_19_05$pop)
+```
+
+#### Existe uma correlação forte entre as variáveis.
+
+```{r}
+# homocedasticidade dos resíduos
+ggplot(modelo_19_05) +
+  geom_point(aes(fitted(modelo_19_05), rstudent(modelo_19_05)), color = "red") +
+  ggtitle("Homocedasticidade dos resíduos em 19/05") +
+  geom_hline(yintercept = 0)
+  
+```
+
+#### Podemos observar que os resíduos se distribuem de maneira aleatória ao redor dos valores previstos, fazendo com que o modelo passe nesse critério de avaliação.
+
+```{r}
+shapiro.test(modelo_19_05$residuals)
+```
+
+#### Como o p-value = 0.007266 < 0.1, concluímos que para um nível de significância de 10%, nossos dados possuem uma distribuição normal.
+
+### Análise 14 de julho de 2020
+
+```{r}
+# teste de sigmificância 
+anova(modelo_14_07)
+```
+
+#### O p-value é quase nulo e tem um valor menor que 0.10, ou seja, a relação entre as duas variáveis é significativa.
+
+```{r}
+# linearidade
+cor(dados_14_07$total_uti, dados_14_07$pop)
+```
+
+#### Existe uma correlação forte entre as variáveis.
+
+```{r}
+# homocedasticidade dos resíduos
+ggplot(modelo_14_07) +
+  geom_point(aes(fitted(modelo_14_07), rstudent(modelo_14_07)), color = "red") +
+  ggtitle("Homocedasticidade dos resíduos em 14/07") +
+  geom_hline(yintercept = 0)
+  
+```
+
+#### Podemos observar que os resíduos se distribuem de maneira aleatória ao redor dos valores previstos, fazendo com que o modelo passe nesse critério de avaliação.
+
+```{r}
+shapiro.test(modelo_14_07$residuals)
+```
+
+#### Como o p-value = 0.00359 < 0.1, concluímos que para um nível de significância de 10%, nossos dados possuem uma distribuição normal.
+
+
+#### Para ambas as datas, o modelo apresenta um valor negativo para a soma de pacientes suspeitos e pacientes confirmados em UTI na DRS 12 Registro, o que é impossível de ocorrer uma vez que não há como os números de internações serem negativos. Portanto, há a presença de pontos influentes.
